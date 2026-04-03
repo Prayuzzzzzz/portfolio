@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useActionState, useEffect, useRef } from 'react';
+import React, { useActionState, useEffect, useRef, useState } from 'react';
 import { Mail, Send, Phone, Globe, Link, Share2 } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -15,7 +15,9 @@ const initialState = {
 
 const Contact = () => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const [state, formAction, isPending] = useActionState(sendContactEmail, initialState);
+  const [flashMessage, setFlashMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -44,6 +46,25 @@ const Contact = () => {
 
     return () => ctx.revert();
   }, []);
+
+  useEffect(() => {
+    if (!state.success && !state.error) {
+      return;
+    }
+
+    if (state.success) {
+      formRef.current?.reset();
+      setFlashMessage({ type: 'success', text: 'Message sent successfully.' });
+    } else if (state.error) {
+      setFlashMessage({ type: 'error', text: state.error });
+    }
+
+    const timeout = window.setTimeout(() => {
+      setFlashMessage(null);
+    }, 3500);
+
+    return () => window.clearTimeout(timeout);
+  }, [state]);
 
   return (
     <section id="contact" ref={containerRef} className="py-24 px-6 max-w-7xl mx-auto contact-section">
@@ -86,8 +107,19 @@ const Contact = () => {
           </div>
         </div>
 
-        <div className="w-full lg:w-1/2 contact-form p-8 md:p-12 glass rounded-3xl border border-white/10">
-          <form action={formAction} className="space-y-6">
+        <div className="relative w-full lg:w-1/2 contact-form p-8 md:p-12 glass rounded-3xl border border-white/10">
+          {flashMessage ? (
+            <div
+              className={`mb-6 rounded-2xl border px-4 py-3 text-sm font-semibold ${
+                flashMessage.type === 'success'
+                  ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300'
+                  : 'border-red-400/30 bg-red-400/10 text-red-300'
+              }`}
+            >
+              {flashMessage.text}
+            </div>
+          ) : null}
+          <form ref={formRef} action={formAction} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-xs font-bold tracking-widest text-slate-400 uppercase">Full Name</label>
@@ -106,12 +138,6 @@ const Contact = () => {
               <label className="text-xs font-bold tracking-widest text-slate-400 uppercase">Message</label>
               <textarea name="message" rows={4} placeholder="I'd love to discuss testing improvements..." className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-slate-600 focus:outline-none focus:border-primary transition-all resize-none"></textarea>
             </div>
-            {state.error ? (
-              <p className="text-sm text-red-400">{state.error}</p>
-            ) : null}
-            {state.success ? (
-              <p className="text-sm text-emerald-400">Your message was sent successfully.</p>
-            ) : null}
             <button type="submit" disabled={isPending} className="flex items-center justify-center gap-2 w-full py-4 text-lg font-bold text-white bg-primary rounded-2xl hover:bg-indigo-600 transition-all duration-300 hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-1 group disabled:cursor-not-allowed disabled:opacity-70">
               {isPending ? 'Sending...' : 'Deploy Message'}
               <Send className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
