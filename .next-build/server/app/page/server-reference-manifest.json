@@ -1,0 +1,17 @@
+{
+  "node": {
+    "600452aa3717e582f617bdb41779ff06e5cdc81aa2": {
+      "workers": {
+        "app/page": {
+          "moduleId": 12007,
+          "async": false,
+          "exportedName": "sendContactEmail",
+          "filename": "app/actions/contact.ts"
+        }
+      },
+      "exportedName": "sendContactEmail",
+      "filename": "app/actions/contact.ts"
+    }
+  },
+  "edge": {}
+}
