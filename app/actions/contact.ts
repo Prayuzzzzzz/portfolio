@@ -60,7 +60,7 @@ export async function sendContactEmail(
       text,
     });
 
-    return { success: true };
+    return { success: true, error: '' };
   } catch (error) {
     console.error('Email sending failed:', error);
     return { success: false, error: 'Transmission failed. Please try again later.' };
